@@ -1,0 +1,606 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block content %}
+<div class="content">
+    <div class="row">
+        <form id="my_form" onsubmit="return false" method="POST" enctype="multipart/form-data" style="margin-left: 7%;">
+            {% csrf_token %}
+            <button class="btn btn-success button-bg" id="submit_btn" type="submit" style="margin-left: 5%; margin-bottom: 2%;">Analyze</button>
+            <button id="save" class="btn btn-primary" type="button" style="margin-bottom: 2%;">
+                Save Image
+            </button>
+
+            <div class="d-flex justify-content-center align-items-center">
+    
+                <label for="file-input" class="box" id="box-label">
+                    <img id="image_preview" src="#" alt="Preview" style="display: none;">
+                    <span id="placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-box-arrow-up" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M3.5 6a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 1 0-1h2A1.5 1.5 0 0 1 14 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 14.5v-8A1.5 1.5 0 0 1 3.5 5h2a.5.5 0 0 1 0 1z"/>
+                            <path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 1.707V10.5a.5.5 0 0 1-1 0V1.707L5.354 3.854a.5.5 0 1 1-.708-.708z"/>
+                        </svg>
+                    </span>
+                    <p id="placeholder_text">Click to Upload Image</p>
+                </label>
+                <input type="file" name="filePath" id="file-input" accept="image/*" required>
+                <input type="hidden" name="image_path" id="image_path" value="//">
+            </div>
+
+        </form>
+        <!-- <div class="col-12">
+            <div class="card card-chart">
+                <div class="card-header ">
+                    <div class="row">
+                        <div class="col-sm-6 text-left">
+                            <h5 class="card-category">Total Shipments</h5>
+                            <h2 class="card-title">Performance</h2>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                                <label class="btn btn-sm btn-primary btn-simple active" id="0">
+                                    <input type="radio" name="options" checked>
+                                    <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Accounts</span>
+                                    <span class="d-block d-sm-none">
+                                        <i class="tim-icons icon-single-02"></i>
+                                    </span>
+                                </label>
+                                <label class="btn btn-sm btn-primary btn-simple" id="1">
+                                    <input type="radio" class="d-none d-sm-none" name="options">
+                                    <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Purchases</span>
+                                    <span class="d-block d-sm-none">
+                                        <i class="tim-icons icon-gift-2"></i>
+                                    </span>
+                                </label>
+                                <label class="btn btn-sm btn-primary btn-simple" id="2">
+                                    <input type="radio" class="d-none" name="options">
+                                    <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Sessions</span>
+                                    <span class="d-block d-sm-none">
+                                        <i class="tim-icons icon-tap-02"></i>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartBig1"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+    <div class="row">
+        <div style="margin-top: 2%; 
+            margin-left: 5%; 
+            font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;">
+            Inference result:
+        </div>
+
+        <table id="">
+            <colgroup>
+                <col style="width: 10%;">
+                <col style="width: 90%;">
+            </colgroup>
+
+            <thead></thead>
+            <tbody>
+                <tr>
+                    <td>Caption</td>
+                    <!-- <td><p id="cap" style="white-space: pre-wrap; word-break: break-word;"></p></td> -->
+                    <td><p id="cap">
+                        <div class="spinner" style="display: none;"></div>
+                    </p></td>
+                </tr>
+                <tr>
+                    <td>Classification</td>
+                    <td><p id="classification">
+                        <div class="spinner" style="display: none;"></div>
+                    </p></td>
+                </tr>
+                <tr>
+                    <td>Evaluate</td>
+                    <td><p id="evaluate">
+                        <div class="spinner" style="display: none;"></div>
+                    </p></td>
+                </tr>
+            </tbody>
+        </table>
+        <!-- <div class="col-lg-4">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category">Total Shipments</h5>
+                    <h3 class="card-title"><i class="tim-icons icon-bell-55 text-primary"></i> 763,215</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartLinePurple"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category">Daily Sales</h5>
+                    <h3 class="card-title"><i class="tim-icons icon-delivery-fast text-info"></i> 3,500€</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="CountryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card card-chart">
+                <div class="card-header">
+                    <h5 class="card-category">Completed Tasks</h5>
+                    <h3 class="card-title"><i class="tim-icons icon-send text-success"></i> 12,100K</h3>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="chartLineGreen"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+    <div class="row">
+        <!-- <div class="col-lg-6 col-md-12">
+            <div class="card card-tasks">
+                <div class="card-header ">
+                    <h6 class="title d-inline">Tasks(5)</h6>
+                    <p class="card-category d-inline">today</p>
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-link dropdown-toggle btn-icon" data-toggle="dropdown">
+                            <i class="tim-icons icon-settings-gear-63"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuLink">
+                            <a class="dropdown-item" href="#pablo">Action</a>
+                            <a class="dropdown-item" href="#pablo">Another action</a>
+                            <a class="dropdown-item" href="#pablo">Something else</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body ">
+                    <div class="table-full-width table-responsive">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">Update the Documentation</p>
+                                        <p class="text-muted">Dwuamish Head, Seattle, WA 8:47 AM</p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="Edit Task">
+                                            <i class="tim-icons icon-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="" checked="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">GDPR Compliance</p>
+                                        <p class="text-muted">The GDPR is a regulation that requires businesses to
+                                            protect the personal data and privacy of Europe citizens for
+                                            transactions that occur within EU member states.</p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="Edit Task">
+                                            <i class="tim-icons icon-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">Solve the issues</p>
+                                        <p class="text-muted">Fifty percent of all respondents said they would be
+                                            more likely to shop at a company </p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="Edit Task">
+                                            <i class="tim-icons icon-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">Release v2.0.0</p>
+                                        <p class="text-muted">Ra Ave SW, Seattle, WA 98116, SUA 11:19 AM</p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="Edit Task">
+                                            <i class="tim-icons icon-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">Export the processed files</p>
+                                        <p class="text-muted">The report also shows that consumers will not easily
+                                            forgive a company once a breach exposing their personal data
+                                            occurs. </p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="Edit Task">
+                                            <i class="tim-icons icon-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <label class="form-check-label">
+                                                <input class="form-check-input" type="checkbox" value="">
+                                                <span class="form-check-sign">
+                                                    <span class="check"></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="title">Arival at export process</p>
+                                        <p class="text-muted">Capitol Hill, Seattle, WA 12:34 AM</p>
+                                    </td>
+                                    <td class="td-actions text-right">
+                                        <button type="button" rel="tooltip" title="" class="btn btn-link"
+                                            data-original-title="Edit Task">
+                                            <i class="tim-icons icon-pencil"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+        <!-- <div class="col-lg-6 col-md-12">
+            <div class="card ">
+                <div class="card-header">
+                    <h4 class="card-title"> Simple Table</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table tablesorter " id="">
+                            <thead class=" text-primary">
+                                <tr>
+                                    <th>
+                                        Name
+                                    </th>
+                                    <th>
+                                        Country
+                                    </th>
+                                    <th>
+                                        City
+                                    </th>
+                                    <th class="text-center">
+                                        Salary
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        Dakota Rice
+                                    </td>
+                                    <td>
+                                        Niger
+                                    </td>
+                                    <td>
+                                        Oud-Turnhout
+                                    </td>
+                                    <td class="text-center">
+                                        $36,738
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Minerva Hooper
+                                    </td>
+                                    <td>
+                                        Curaçao
+                                    </td>
+                                    <td>
+                                        Sinaai-Waas
+                                    </td>
+                                    <td class="text-center">
+                                        $23,789
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Sage Rodriguez
+                                    </td>
+                                    <td>
+                                        Netherlands
+                                    </td>
+                                    <td>
+                                        Baileux
+                                    </td>
+                                    <td class="text-center">
+                                        $56,142
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Philip Chaney
+                                    </td>
+                                    <td>
+                                        Korea, South
+                                    </td>
+                                    <td>
+                                        Overland Park
+                                    </td>
+                                    <td class="text-center">
+                                        $38,735
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Doris Greene
+                                    </td>
+                                    <td>
+                                        Malawi
+                                    </td>
+                                    <td>
+                                        Feldkirchen in Kärnten
+                                    </td>
+                                    <td class="text-center">
+                                        $63,542
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Mason Porter
+                                    </td>
+                                    <td>
+                                        Chile
+                                    </td>
+                                    <td>
+                                        Gloucester
+                                    </td>
+                                    <td class="text-center">
+                                        $78,615
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Jon Porter
+                                    </td>
+                                    <td>
+                                        Portugal
+                                    </td>
+                                    <td>
+                                        Gloucester
+                                    </td>
+                                    <td class="text-center">
+                                        $98,615
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+    </div>
+</div>
+{% endblock content %}
+{% block extrajs %}
+<script>
+    $(document).ready(function () {
+        // Javascript method's body can be found in assets/js/demos.js
+        demo.initDashboardPageCharts();
+
+    });
+
+    const imageInput = document.getElementById('file-input');
+    const imagePreview = document.getElementById('image_preview');
+    const placeholder = document.getElementById('placeholder');
+    const placeholderText = document.getElementById('placeholder_text');
+    const hiddenImagePath = document.getElementById('image_path');
+    const myform = document.getElementById('my_form');
+    const caption = document.getElementById('cap')
+    const classification = document.getElementById('classification')
+    const evaluate = document.getElementById('evaluate')
+    const spinners = document.querySelectorAll('spinner');
+    const submitBtn = document.getElementById('submit_btn');
+    // const progressContainer = document.getElementById('progress-container');
+    // const progressBar = document.getElementById('progress-bar');
+    // const progressText = document.getElementById('progress-text');
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    imageInput.addEventListener('change', function(e) {
+        const file = this.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                placeholder.style.display = 'none';
+                placeholderText.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            // 3. Send to Server
+            fetch('/upload/', {  // Ensure this matches your urls.py
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                // submitBtn.disabled = false;
+                if (!data.ext) {
+                    alert('Invalid file extension');
+                } else if (data.success) {
+                    hiddenImagePath.value = data.image_url;
+                    console.log('File uploaded to:', hiddenImagePath.value);
+                } else {
+                    alert('Upload failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during upload.');
+            });
+        }
+    });
+
+
+    myform.addEventListener('submit', function(e) {
+
+        console.log("Form submit triggered. Default prevented.");
+        // if (e) { e.preventDefault(); }
+
+        spinners.forEach(spinner => {
+            spinner.style.display = 'block';
+        });
+        submitBtn.disabled = true;
+        // progressContainer.style.display = 'block';
+        // progressBar.style.width = '0%';
+        // progressText.innerText = 'Starting...';
+
+        const formData = new FormData();
+        formData.append('image_path', hiddenImagePath.value);
+        // formData.append('models', document.getElementById('model').value)
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch('/analyze/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            // if (data.task_id) {
+            //     pollProgress(data.task_id);
+            // }
+
+            spinners.forEach(spinner => {
+                spinner.style.display = 'none';
+            });
+            submitBtn.disabled = false;
+
+            if (data.filePathName) {
+                imagePreview.src = data.filePathName;
+                console.log('File returned:', imagePreview.src);
+            // } else if (data.caption) {
+                hiddenImagePath.value = data.filePathName;
+                caption.innerText = data.caption; caption.style.color = 'black';
+                classification.innerText = data.classification; classification.style.color = 'black';
+                evaluate.innerText = data.evaluate; evaluate.style.color = 'black';
+                console.log('Caption returned:', data.caption);
+            } else {
+                // progressContainer.style.display = 'none';
+                alert('Process failed: ' + data.error);
+            }
+        })
+        .catch(error => {
+            spinners.forEach(spinner => {
+                spinner.style.display = 'none';
+            });
+            submitBtn.disabled = false;
+            // progressContainer.style.display = 'none';
+            console.error('Error:', error);
+            alert('An error occurred during process.');
+        });
+    });
+
+
+    document.getElementById('save').addEventListener('click', function() {
+
+        const image = hiddenImagePath.value;
+        const link = document.createElement('a');
+        const now = new Date();
+        const dateString = now.toISOString().replace(/[:.]/g, '-'); // Format to "YYYY-MM-DDTHH-MM-SS"
+        link.download = `${dateString}.jpg`;
+        link.href = image;
+        link.click();
+
+    });
+    
+</script>
+{% endblock extrajs %}

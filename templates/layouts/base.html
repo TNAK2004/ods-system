@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{% load i18n static admin_black %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_direction as direction %}
+{% get_admin_setting as admin_setting %}
+<html lang="en">
+
+<head>
+    <title>{% block title %}{% endblock title %} | Django Black Dashboard </title>
+    <link rel="canonical" href="https://app-generator.dev/product/black-dashboard/" />
+    
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.2/mapbox-gl.css" rel="stylesheet">
+    <link href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'styles.css' %}">
+
+    {% include 'includes/head.html' %}
+    {% block extrahead %}{% endblock extrahead %}
+    {% block extrastyle %}{% endblock extrastyle %}
+</head>
+
+<body class="{% block bodyclass %}{% endblock bodyclass %}">
+    <div class="wrapper">
+        {% block sidebar %}
+        {% include 'includes/sidebar.html' %}
+        {% endblock sidebar %}
+        <div class="main-panel">
+            {% block navigation %}
+            {% include 'includes/navigation.html' %}
+            {% endblock navigation %}
+            {% block content %}{% endblock content %}
+            {% block footer %}
+            {% include 'includes/footer.html' %}
+            {% endblock footer %}
+        </div>
+    </div>
+    {% block fixed-plugin %}
+    {% include 'includes/fixed-plugin.html' %}
+    {% endblock fixed-plugin %}
+    {% include 'includes/scripts.html' %}
+    {% block extrajs %}{% endblock extrajs %}
+</body>
+
+</html>

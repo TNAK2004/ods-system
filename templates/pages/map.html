@@ -1,0 +1,84 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Map {% endblock title %}
+
+{% block content %}
+<div class="content">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card card-plain">
+        <div class="card-header">
+          Google Maps
+        </div>
+        <div class="card-body">
+          <div id="geocoder" class="geocoder" style="width: 300px;"></div>
+          <div id="screenshot"><button type="button" class="btn btn-primary">Capture</button></div>
+          <div id="map" class=""></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+{% block extrajs %}
+<script>
+  // $(document).ready(function () {
+  //   // Javascript method's body can be found in assets/js/demos.js
+  //   // demo.initGoogleMaps();
+  //   demo.initMapbox();
+  // });
+  document.addEventListener("DOMContentLoaded", function () {
+    mapboxgl.accessToken = 'pk.eyJ1IjoidG5hazMyIiwiYSI6ImNtaGdjYTB3NzBla3IybXExOWd1d2xxdXkifQ.b0YQZVULU-ljN6bwPfdyGA';
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/satellite-streets-v11',
+      center: [106.6297, 10.8231],
+      zoom: 12,
+      preserveDrawingBuffer: true
+    });
+
+    var marker = new mapboxgl.Marker()
+    .setLngLat([108.2772, 14.0583])
+    .addTo(map);
+
+    var geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+      marker: {
+          color: 'orange'  // optional: marker color for searched location
+      },
+      placeholder: 'Search for places',
+    });
+
+    document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
+    geocoder.on('result', (e) => {
+      console.log('Search result:', e.result);
+      marker.setLngLat(e.result.center);
+    });
+
+    // Capture image
+    let mapReady = false;
+    map.on('load', () => {
+        mapReady = true;
+    });
+
+    document.getElementById('screenshot').addEventListener('click', function () {
+      if (!mapReady) return;
+
+      // map.once('idle', () => {
+          const image = map.getCanvas().toDataURL('image/jpeg', 0.95);
+
+          const link = document.createElement('a');
+          const now = new Date();
+          const dateString = now.toISOString().replace(/[:.]/g, '-'); // Format to "YYYY-MM-DDTHH-MM-SS"
+          link.download = `screenshot_${dateString}.jpg`;
+          link.href = image;
+          link.click();
+      // });
+    });
+
+  });
+  
+</script>{% endblock extrajs %}

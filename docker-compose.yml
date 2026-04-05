@@ -1,0 +1,54 @@
+version: '3.13'
+
+services:
+  # appseed-app:
+  django:
+    build: .
+    image: tnak32/ods-django:latest
+    container_name: ods-django
+    restart: always
+    environment:
+      - OBD=http://obd:8000
+      - CAP=http://img_cap:8001
+    depends_on:
+      - obd
+      - img_cap
+    networks:
+      - db_network
+      - web_network
+
+  nginx:
+    container_name: nginx
+    restart: always
+    image: "nginx:latest"
+    ports:
+      - "5085:5085"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    networks:
+      - web_network
+    depends_on: 
+      # - appseed-app
+      - django
+  
+  obd:
+    image: khangtruong1108/obd:image
+    container_name: django_obd
+    # environment:
+    ports:
+      - "8000:8000"
+
+  img_cap:
+    image: khangtruong1108/image-cap-class:gen-3.0
+    container_name: django_img_cap
+    environment:
+      - API_KEY=AIzaSyA8DLrkYH5JfS6d_eWINqMNJTIv77V6DXI
+    ports:
+      - "8001:8001"
+
+networks:
+  db_network:
+    driver: bridge
+  web_network:
+    driver: bridge
+ 
